@@ -1,0 +1,9 @@
+- name: Criação dos servidores na AWS
+  hosts: localhost
+  connection: local
+
+  roles:
+    - roles/aws-ec2
+
+  vars:
+   credentials_file: "{{ role_path }}/files/chave"

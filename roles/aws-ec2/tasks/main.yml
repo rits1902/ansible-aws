@@ -1,0 +1,27 @@
+---
+- name: Criando Grupo na AWS
+  ec2_group:
+    aws_access_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    aws_secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    name: group-teste
+    description: group-teste
+    region: sa-east-1
+    rules:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+
+- name: Criando EC2 na AWS
+  ec2:
+    key_name: chave
+    aws_access_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    aws_secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    instance_type: t2.large
+    image: ami-xxxxxxx
+    region: sa-east-1
+    group: group-teste
+    state: present
+    instance_tags:
+        name: qualquercoisa

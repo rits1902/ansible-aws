@@ -1,3 +1,7 @@
-# ansible-ec2-aws 
-     * Criar Group com liberacao de regra de firewall
-     * Criar EC2 com o grupo criado
+# Role ansible-ec2-aws
+     * Criação de VPC
+     * Criação de Subnet
+     * Criação de Internet Gateway
+     * Criação de Route table
+     * Criação de Segurity Group
+     * Criação de instancia EC2

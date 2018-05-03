@@ -1,11 +1,59 @@
 ---
+- name: Criando VPC na AWS
+  ec2_vpc_net:
+    aws_access_key: aws_access_key
+    aws_secret_key: aws_secret_key
+    name: vpc-cliente
+    cidr_block: 10.0.0.0/24
+    region: us-east-2
+    tags:
+      Projeto: cliente
+  register: vpc_cliente
+
+- name: Criando subnet na VPC
+  ec2_vpc_subnet:
+    aws_access_key: aws_access_key
+    aws_secret_key: aws_secret_key
+    vpc_id: "{{ vpc_cliente.vpc.id }}"
+    cidr: 10.0.0.0/24
+    region: us-east-2
+    state: present
+    resource_tags:
+      Projeto: cliente
+  register: subnet_cliente
+
+- name: Criando Internet Gateway
+  ec2_vpc_igw:
+    aws_access_key: aws_access_key
+    aws_secret_key: aws_secret_key
+    vpc_id: "{{ vpc_cliente.vpc.id }}"
+    region: us-east-2
+    state: present
+  register: igw_cliente
+
+- name: Criando route table
+  ec2_vpc_route_table:
+    aws_access_key: aws_access_key
+    aws_secret_key: aws_secret_key
+    vpc_id: "{{ vpc_cliente.vpc.id }}"
+    region: us-east-2
+    tags:
+      Name: route_table_cliente
+    subnets:
+      - "{{ subnet_cliente.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw_cliente.gateway_id }}"
+  register: route_table_cliente
+
 - name: Criando Grupo na AWS
   ec2_group:
-    aws_access_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    aws_secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    name: group-teste
-    description: group-teste
-    region: sa-east-1
+    aws_access_key: aws_access_key
+    aws_secret_key: aws_secret_key
+    name: cliente-aws
+    description: cliente-aws
+    region: us-east-2
+    vpc_id: "{{ vpc_cliente.vpc.id }}"
     rules:
       - proto: all
         cidr_ip: 0.0.0.0/0
@@ -15,13 +63,17 @@
 
 - name: Criando EC2 na AWS
   ec2:
-    key_name: chave
-    aws_access_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    aws_secret_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    instance_type: t2.large
-    image: ami-xxxxxxx
-    region: sa-east-1
-    group: group-teste
+    key_name: key_aws
+    aws_access_key: aws_access_key
+    aws_secret_key: aws_secret_key
+    instance_type: t2.medium
+    image: ami-f6cef993
+    vpc_subnet_id: "{{ subnet_cliente.subnet.id }}"
+    region: us-east-2
+    group: cliente-aws
     state: present
     instance_tags:
-        name: qualquercoisa
+        name: teste-cliente-m3-medium
+    volumes:
+    - device_name: /dev/sdb
+      volume_size: 100
